@@ -1,0 +1,128 @@
+{
+    "paper": {
+      "title": "PathRAG: Pruning Graph-based Retrieval Augmented Generation with Relational Paths",
+      "authors": [
+        "Boyu Chen (Beijing University of Posts and Telecommunications)",
+        "Zirui Guo (Beijing University of Posts and Telecommunications, University of Hong Kong)",
+        "Zidan Yang (Beijing University of Posts and Telecommunications, Northeastern University)",
+        "Yuluo Chen (Beijing University of Posts and Telecommunications)",
+        "Junze Chen (Beijing University of Posts and Telecommunications)",
+        "Zhenghao Liu (Northeastern University)",
+        "Chuan Shi (Beijing University of Posts and Telecommunications)",
+        "Cheng Yang (Beijing University of Telecommunications)"
+      ],
+      "abstract": {
+        "problem": "Redundancy in retrieved information and suboptimal flat prompting structures in graph-based RAG methods.",
+        "solution": "PathRAG retrieves key relational paths using flow-based pruning and organizes paths in prompts to enhance LLM generation.",
+        "results": "Outperforms state-of-the-art baselines across six datasets and five evaluation dimensions (e.g., 60.44% average win rate against GraphRAG)."
+      },
+      "introduction": {
+        "background": {
+          "RAG": "Retrieval-augmented generation enhances LLMs by accessing external databases.",
+          "Graph-based RAG": "Organizes text into indexing graphs (nodes=entities, edges=relationships) for global-level questions."
+        },
+        "limitations": {
+          "Existing methods": "GraphRAG (community detection) and LightRAG (ego-network retrieval) suffer from redundant information and flat prompting.",
+          "Impact": "Noise, increased token consumption, and reduced answer quality."
+        },
+        "proposedMethod": {
+          "keyIdea": "Retrieve relational paths between query-relevant nodes, prune redundancies via flow-based pruning, and prioritize paths in prompts.",
+          "contributions": [
+            "Identifies redundancy as the core limitation of graph-based RAG.",
+            "Proposes PathRAG with path retrieval and prompting.",
+            "Demonstrates superior performance and efficiency."
+          ]
+        }
+      },
+      "methodology": {
+        "overview": {
+          "stages": ["Node Retrieval", "Path Retrieval", "Answer Generation"]
+        },
+        "nodeRetrieval": {
+          "process": "Extract keywords from query, use dense vector matching to retrieve nodes from the indexing graph.",
+          "parameters": "Number of retrieved nodes \(N \in [10, 60]\)."
+        },
+        "pathRetrieval": {
+          "flowBasedPruning": {
+            "algorithm": "Resource allocation with decay rate \(\alpha\) and early stopping threshold \(\theta\).",
+            "reliabilityScore": "Calculated as average resource flow along paths."
+          },
+          "keySteps": [
+            "Identify paths between node pairs.",
+            "Prune paths using flow-based criteria.",
+            "Select top-\(K\) paths based on reliability."
+          ]
+        },
+        "answerGeneration": {
+          "promptDesign": {
+            "pathOrdering": "Paths ordered by ascending reliability to mitigate 'lost in the middle' issues.",
+            "template": "Concatenate query with paths, placing most reliable paths at the end."
+          }
+        }
+      },
+      "experiments": {
+        "setup": {
+          "datasets": ["Agriculture", "Legal", "History", "CS", "Biology", "Mix"],
+          "baselines": ["NaiveRAG", "HyDE", "GraphRAG", "LightRAG"],
+          "metrics": ["Comprehensiveness", "Diversity", "Logicality", "Relevance", "Coherence"],
+          "implementation": "LLM: GPT-4o-mini; indexing graphs same as GraphRAG."
+        },
+        "results": {
+          "main": "PathRAG achieves average win rates of 60.88% (Comprehensiveness) to 59.93% (Coherence) across all datasets.",
+          "datasetPerformance": "Larger datasets (e.g., Legal, History) show higher improvements (e.g., 65.53% win rate in Legal)."
+        },
+        "hyperparameterAnalysis": {
+          "N": "Optimal at \(N=40\); performance declines with over-retrieval.",
+          "K": "Peak at \(K=15\); larger \(K\) adds noise.",
+          "α": "Best at \(\alpha=0.8\); higher values ignore path distance."
+        },
+        "ablationStudies": {
+          "pathOrdering": "Flow-based ordering outperforms random/hop-first by ~56%.",
+          "promptFormat": "Path-based prompts outperform flat organization by ~55%."
+        },
+        "tokenEfficiency": {
+          "PathRAG": "13,318 tokens per query (16% reduction vs. LightRAG).",
+          "PathRAG-It": "8,869 tokens (44% reduction) with comparable performance."
+        },
+        "caseStudies": {
+          "example1": "Agriculture domain: PathRAG provides more comprehensive and structured answers than LightRAG.",
+          "example2": "CS domain: PathRAG lists 10 derived features vs. LightRAG's 8, with better logicality."
+        }
+      },
+      "conclusion": {
+        "summary": "PathRAG reduces noise via path retrieval and improves answer quality through structured prompting.",
+        "futureWork": [
+          "Optimize indexing graph construction.",
+          "Explore other substructures (e.g., trees, subgraphs).",
+          "Collect human-annotated datasets."
+        ]
+      },
+      "references": {
+        "count": 60,
+        "examples": [
+          "Edge et al. (2024) - GraphRAG",
+          "Guo et al. (2024) - LightRAG",
+          "Lewis et al. (2020) - Dense retrieval"
+        ]
+      },
+      "appendices": {
+        "datasets": {
+          "statistics": {
+            "Agriculture": "1.9M tokens, 22K nodes",
+            "Legal": "4.7M tokens, 20K nodes",
+            "Mix": "602K tokens, 10K nodes"
+          }
+        },
+        "baselines": {
+          "descriptions": {
+            "NaiveRAG": "Flat text chunk retrieval.",
+            "HyDE": "Generates hypothetical documents for retrieval.",
+            "GraphRAG": "Community detection on indexing graph."
+          }
+        },
+        "evaluationDimensions": {
+          "criteria": ["Comprehensiveness", "Diversity", "Logicality", "Relevance", "Coherence"]
+        }
+      }
+    }
+  }
